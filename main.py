@@ -2,22 +2,157 @@
 import openpyxl
 import os
 from openpyxl.workbook import Workbook
-
 import pandas as pd
 from xlrd import open_workbook
+# обработка с помощью бота
+# import telegram
+import telebot
+from aiogram import Bot, types
+import shutil
+import zipfile
+import time
+
+
 
 def main():
 
 
-   def convert_file():
-      wb = open_workbook('1_xls.xls')
+   def telegram_bot():
+      bot = telebot.TeleBot("")
 
-      data = pd.read_excel('1_xls.xls')
+      # def start_send_welcome():
+      #    markup = telebot.types.ReplyKeyboardMarkup(row_width=1)
+      #    itembtn0 = telebot.types.KeyboardButton('/start')
+      #    markup.add(itembtn0)
+      # start_send_welcome()
 
-      data.to_excel('convert/filename.xlsx', index=False)
-      print("good")
+      @bot.message_handler(commands=['start'])
+      def send_welcome(message):
+         markup = telebot.types.ReplyKeyboardMarkup(row_width=2)
+         itembtn1 = telebot.types.KeyboardButton('Обработай файл!')
+         itembtn2 = telebot.types.KeyboardButton('Закажи пива')
+         itembtn3 = telebot.types.KeyboardButton('Пришли титьки!')
+         markup.add(itembtn2, itembtn3, itembtn1)
+         bot.send_message(message.chat.id, "Бонжур епта! Че надо?", reply_markup=markup)
+
+         @bot.message_handler(func=lambda message: message.text == 'Обработай файл!')
+         def option1(message):
+            bot.send_message(message.chat.id, 'В п.зду работу!')
+            time.sleep(1)
+            bot.send_message(message.chat.id, 'Ладно, х.й с тобой. Кидай файл в чат')
+
+         @bot.message_handler(func=lambda message: message.text == 'Закажи пива')
+         def option2(message):
+            bot.send_message(message.chat.id, 'Это я за! ')
+            bot.send_message(message.chat.id, 'https://sun9-11.userapi.com/c4941/u3214291/5693781/x_ac5927b1.jpg')
+
+
+         @bot.message_handler(func=lambda message: message.text == 'Пришли титьки!')
+         def option3(message):
+            bot.send_message(message.chat.id, '（。ㅅ 。）')
+
+
+      @bot.message_handler(content_types=['document'])
+      def handle_docs_photo(message):
+         bot.send_message(message.chat.id, 'Подожди. Пару сек...')
+         file_id = message.document.file_id
+         file_name = message.document.file_name
+         file_info = bot.get_file(file_id)
+         file = bot.download_file(file_info.file_path)
+         with open(file_name, 'wb') as new_file:
+            new_file.write(file)
+
+         # Distribute the file in folders
+         folder_sent_file = file_name + "_folders"
+         if not os.path.isdir(folder_sent_file):
+            os.mkdir(folder_sent_file)
+         # os.mkdir(file_name + "_folders")
+         shutil.move(file_name, file_name + "_folders")
+         os.chdir(file_name + "_folders")
+
+         path_convert_file = file_name + "_folders/" + file_name
+         path_file = file_name + "_folders"
+
+         bot.send_message(message.chat.id, "Конвертирую")
+
+         try:
+            convert_file(file_name, path_file)
+            bot.send_message(message.chat.id, "За.ебись отконвертировалось")
+         except:
+            bot.send_message(message.chat.id, 'Произошла какая-то хуйня c конвертацией...')
+
+
+         bot.send_message(message.chat.id, "Распределяю по папкам")
+         try:
+            search_col_num()
+            bot.send_message(message.chat.id, "И этим без проблем")
+         except:
+            bot.send_message(message.chat.id, 'Произошла какая-то хуйня с поиском строки и обработкой таблиц...')
+
+
+         bot.send_message(message.chat.id, "Упаковываю")
+         # Create a zip archive
+         os.chdir("..")
+         zip_name = file_name + ".zip"
+         zip_file = zipfile.ZipFile(zip_name, 'w')
+         for root, dirs, files in os.walk(path_file):
+            for file in files:
+               zip_file.write(os.path.join(root, file))
+         zip_file.close()
+
+         # Send the archive back to the user
+         bot.send_document(message.chat.id, open(zip_name, 'rb'))
+         bot.send_message(message.chat.id, "Готово")
+
+         bot.send_message(message.chat.id, "Убираю это г.вно с сервера")
+         # Clean up
+         shutil.rmtree(file_name + "_folders")
+         os.remove(zip_name)
+         bot.send_message(message.chat.id, "Удалил")
+         bot.send_message(message.chat.id, "С тебя пиво, и не одно)")
+
+      bot.polling()
+
+
+
+
+   def convert_file(path_convert_file, path_file):
+   # def convert_file(path_convert_file, path_file):
+      wb = open_workbook(path_convert_file)
+      print(wb)
+
+      data = pd.read_excel(wb)
+
+      data.to_excel('filename_new.xlsx', index=False)
+      print("Converted")
+
+   def search_col_num():
+      # Open the Excel file
+      wb = openpyxl.load_workbook('filename_new.xlsx')
+
+      # Get the active sheet
+      sheet = wb.active
+
+      # Get the column name to search
+
+      column_name_tab_1 = "Реестровый номер МО, куда направлен пациент"
+      column_name_tab_6 = "Реестровый номер МО"
+
+      # Iterate through the sheet and search for the column name
+      for row in sheet.iter_rows():
+         for cell in row:
+            if cell.value == column_name_tab_1:
+               # Print the column number
+               print("Таблица 1. Нужный столбец:", cell.column)
+               table_1()
+            elif cell.value == column_name_tab_6:
+               print("Таблица 6. Нужный столбец: ", cell.column)
+               table_6()
+               # return
+
+
    def table_1():
-      path = '1_xls.xls'
+      path = 'filename_new.xlsx'
       number_of_col = 5
       # path = input("Введи полный путь до файла:")
       # number_of_col = int(input("Введи номер столбца по которому будет проходить фильтрация:"))
@@ -33,7 +168,7 @@ def main():
       print(f'В файле: строк {row} и столбцов {columns}\n')
       # получаем список категорий (в данном случае) и упаковываем их в массив
       category_arr = []
-      for i in range(3 , row+1):
+      for i in range(4 , row+1):
          cell_obj = sheet_obj.cell( row=i, column = number_of_col)
          clear_value = cell_obj.value
          if not clear_value in category_arr:
@@ -97,9 +232,9 @@ def main():
 
 
    def table_6():
-      # path = 'тест 2xlsx.xlsx'
+      path = 'filename_new.xlsx'
       number_of_col = 2
-      path = input("Введи полный путь до файла:")
+      # path = input("Введи полный путь до файла:")
       # number_of_col = int(input("Введи номер столбца по которому будет проходить фильтрация:"))
 
 
@@ -191,8 +326,12 @@ def main():
             print("Не понял. Давай еще раз")
 
    # Запускаем обработку функций здесь
+   telegram_bot()
+   # convert_file()
+   # search_col_num()
+
+   # не актуально
    # table_number()
-   convert_file()
    # table_1()
    # table_6()
 
