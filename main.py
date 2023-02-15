@@ -1,16 +1,14 @@
-# This is a sample Python script.
+
 import openpyxl
 import os
 from openpyxl.workbook import Workbook
 import pandas as pd
 from xlrd import open_workbook
-# обработка с помощью бота
-# import telegram
 import telebot
-from aiogram import Bot, types
 import shutil
 import zipfile
 import time
+
 
 
 
@@ -20,17 +18,12 @@ def main():
    def telegram_bot():
       bot = telebot.TeleBot("")
 
-      # def start_send_welcome():
-      #    markup = telebot.types.ReplyKeyboardMarkup(row_width=1)
-      #    itembtn0 = telebot.types.KeyboardButton('/start')
-      #    markup.add(itembtn0)
-      # start_send_welcome()
 
       @bot.message_handler(commands=['start'])
       def send_welcome(message):
          markup = telebot.types.ReplyKeyboardMarkup(row_width=2)
          itembtn1 = telebot.types.KeyboardButton('Обработай файл!')
-         itembtn2 = telebot.types.KeyboardButton('Закажи пива')
+         itembtn2 = telebot.types.KeyboardButton('По пивку?')
          itembtn3 = telebot.types.KeyboardButton('Пришли титьки!')
          markup.add(itembtn2, itembtn3, itembtn1)
          bot.send_message(message.chat.id, "Бонжур епта! Че надо?", reply_markup=markup)
@@ -41,15 +34,15 @@ def main():
             time.sleep(1)
             bot.send_message(message.chat.id, 'Ладно, х.й с тобой. Кидай файл в чат')
 
-         @bot.message_handler(func=lambda message: message.text == 'Закажи пива')
+         @bot.message_handler(func=lambda message: message.text == 'По пивку?')
          def option2(message):
             bot.send_message(message.chat.id, 'Это я за! ')
-            bot.send_message(message.chat.id, 'https://sun9-11.userapi.com/c4941/u3214291/5693781/x_ac5927b1.jpg')
+            bot.send_message(message.chat.id, 'https://i.pinimg.com/originals/b3/9c/0f/b39c0f73f6535fa3c5549c59cecc9ce3.gif')
 
 
          @bot.message_handler(func=lambda message: message.text == 'Пришли титьки!')
          def option3(message):
-            bot.send_message(message.chat.id, '（。ㅅ 。）')
+            bot.send_message(message.chat.id, 'https://www.slurmed.com/fgrabs/01acv10/01acv10_029.jpg')
 
 
       @bot.message_handler(content_types=['document'])
@@ -73,24 +66,24 @@ def main():
          path_convert_file = file_name + "_folders/" + file_name
          path_file = file_name + "_folders"
 
-         bot.send_message(message.chat.id, "Конвертирую")
+         bot.send_message(message.chat.id, "https://giffiles.alphacoders.com/161/161758.gif")
 
          try:
             convert_file(file_name, path_file)
-            bot.send_message(message.chat.id, "За.ебись отконвертировалось")
+            # bot.send_message(message.chat.id, "За.ебись отконвертировалось")
          except:
             bot.send_message(message.chat.id, 'Произошла какая-то хуйня c конвертацией...')
 
 
-         bot.send_message(message.chat.id, "Распределяю по папкам")
+         # bot.send_message(message.chat.id, "Распределяю по папкам")
          try:
             search_col_num()
-            bot.send_message(message.chat.id, "И этим без проблем")
+            # bot.send_message(message.chat.id, "И этим без проблем")
          except:
             bot.send_message(message.chat.id, 'Произошла какая-то хуйня с поиском строки и обработкой таблиц...')
 
 
-         bot.send_message(message.chat.id, "Упаковываю")
+         # bot.send_message(message.chat.id, "Упаковываю")
          # Create a zip archive
          os.chdir("..")
          zip_name = file_name + ".zip"
@@ -101,15 +94,17 @@ def main():
          zip_file.close()
 
          # Send the archive back to the user
+         time.sleep(6)
          bot.send_document(message.chat.id, open(zip_name, 'rb'))
-         bot.send_message(message.chat.id, "Готово")
+         time.sleep(2)
 
-         bot.send_message(message.chat.id, "Убираю это г.вно с сервера")
+
+         bot.send_message(message.chat.id, "Данные по таблице удалены")
          # Clean up
          shutil.rmtree(file_name + "_folders")
          os.remove(zip_name)
-         bot.send_message(message.chat.id, "Удалил")
-         bot.send_message(message.chat.id, "С тебя пиво, и не одно)")
+         bot.send_message(message.chat.id, "С тебя пиво")
+         bot.send_message(message.chat.id, "Нажми /start для выхода в меню")
 
       bot.polling()
 
