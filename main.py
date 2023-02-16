@@ -52,8 +52,23 @@ def main():
          file_name = message.document.file_name
          file_info = bot.get_file(file_id)
          file = bot.download_file(file_info.file_path)
-         with open(file_name, 'wb') as new_file:
-            new_file.write(file)
+         try:
+            with open(file_name, 'wb') as new_file:
+               new_file.write(file)
+         except:
+            bot.send_message(message.chat.id, 'С файлом какаято фигня ')
+            bot.send_message(message.chat.id, 'https://ananasposter.ru/image/catalog/poster/mult/87/6628.jpg')
+            return
+
+         # Get the file extension
+         file_extension = file_name.split(".")[-1]
+         # List of valid extensions
+         valid_extensions = ['xls', 'xlsx']
+         if file_extension not in valid_extensions:
+            bot.send_message(message.chat.id, 'С файлом какаято фигня. Это вообще тот файл?')
+            bot.send_message(message.chat.id, 'https://i.ytimg.com/vi/hENjphylnKM/maxresdefault.jpg')
+            return
+
 
          # Distribute the file in folders
          folder_sent_file = file_name + "_folders"
